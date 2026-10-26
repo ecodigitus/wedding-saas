@@ -1,0 +1,42 @@
+# Env
+.env
+.env.local
+*.env
+!.env.example
+!.env.local.example
+
+# Python
+backend/.venv/
+backend/__pycache__/
+**/__pycache__/
+*.pyc
+backend/.pytest_cache/
+backend/.ruff_cache/
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/verify-screenshots/
+
+# Docker
+postgres-data/
+redis-data/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.log
+
+# Claude Code local session artifacts
+.claude/
+
+# Secrets accidentally exported into the repo dir (e.g. Xendit key CSV export)
+secret_api_key.csv
+*.secret.csv
+
+# Media klien untuk uji lokal (dihapus setelah acara) — JANGAN di-commit
+frontend/public/dev-assets/
+frontend/app/dev-royal-preview/

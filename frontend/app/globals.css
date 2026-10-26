@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+/*
+ * Token warna & font sistem — sesuai styleguide.v2.md §2 & §3.
+ * Ini token untuk PRODUK KITA SENDIRI (dashboard, editor, marketing),
+ * BUKAN untuk template undangan (yang temanya ditentukan user, §2.2).
+ */
+:root {
+  --color-primary: #7a5c61;
+  --color-primary-dark: #5c4348;
+  --color-secondary: #d9c4a3;
+  --color-background: #fbf8f5;
+  --color-surface: #ffffff;
+  --color-border: #e8e0d8;
+  --color-text-primary: #2e2325;
+  --color-text-secondary: #6b5d5f;
+  /* success/warning/danger digelapkan dari nilai styleguide asli — versi
+     asli gagal WCAG AA 4.5:1 saat dipakai sebagai teks (lihat
+     scripts/audit-contrast.mjs). Tetap satu keluarga hue, cuma ~5-20% lebih gelap. */
+  --color-success: #487259;
+  --color-danger: #ac5156;
+  --color-warning: #836430;
+}
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-secondary: var(--color-secondary);
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+  --color-border: var(--color-border);
+  --color-success: var(--color-success);
+  --color-danger: var(--color-danger);
+  --color-warning: var(--color-warning);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-script: var(--font-script);
+  --font-royal: var(--font-royal);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-body), -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Focus state harus tetap terlihat — styleguide.v2.md §5.2 */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Scroll-reveal halaman undangan publik (components/ScrollReveal.tsx).
+ * `.reveal-pending` CUMA pernah ditambah lewat JS (tidak pernah ada di HTML
+ * hasil SSR) — jadi default tanpa JS/gagal load, konten selalu penuh
+ * kelihatan (progressive enhancement, bukan prasyarat). */
+.reveal-target {
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
+}
+.reveal-target.reveal-pending {
+  opacity: 0;
+  transform: translateY(1.25rem);
+}
+.reveal-target.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Partikel kerlip idle di hero (components/InvitationView.tsx, SparkleParticles)
+ * — CSS murni, tidak butuh JS/effect. prefers-reduced-motion dihormati
+ * langsung lewat media query (animasi dimatikan, tetap terlihat diam,
+ * bukan hilang total). */
+@keyframes sparkle-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(-0.6rem) scale(1.15);
+    opacity: 1;
+  }
+}
+.sparkle-particle {
+  animation: sparkle-float 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sparkle-particle {
+    animation: none;
+    opacity: 0.8;
+  }
+}
+
+/* Animasi masuk hero, bertahap per elemen (components/InvitationView.tsx) —
+ * pengganti transisi "buka gerbang" ala Katsudoto TANPA klik wajib & TANPA
+ * menyembunyikan konten (lihat pertimbangan produk di task.v2.md Log
+ * Perubahan v20→v21): badge/eyebrow → nama → tanggal → divider → countdown
+ * muncul berurutan begitu halaman dibuka, murni CSS (`animation-delay`
+ * bertingkat), TIDAK butuh JS sama sekali — beda dari `.reveal-target` yang
+ * butuh IntersectionObserver, sehingga aman 100% untuk no-JS/SSR: browser
+ * apa pun yang membaca CSS (bukan cuma yang jalankan JS) akan tetap
+ * memutar animasi ini, dan kalaupun animasi tidak didukung, elemen langsung
+ * di keadaan akhir (opacity 1) lewat fallback tanpa `@keyframes` yang gagal di-parse. */
+@keyframes hero-stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.hero-stage {
+  animation: hero-stage-in 0.7s ease-out both;
+}
+.hero-stage-1 {
+  animation-delay: 0s;
+}
+.hero-stage-2 {
+  animation-delay: 0.15s;
+}
+.hero-stage-3 {
+  animation-delay: 0.3s;
+}
+.hero-stage-4 {
+  animation-delay: 0.45s;
+}
+.hero-stage-5 {
+  animation-delay: 0.6s;
+}
+.hero-stage-6 {
+  animation-delay: 0.75s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-stage {
+    animation: none;
+  }
+}
+
+/* Template "Burgundy Royal" (components/RoyalInvitation.tsx) — satu-satunya
+ * animasi sama dengan situs Canva acuan (dibaca langsung dari situs publiknya):
+ * efek "tulis" pada teks script (judul, huruf monogram, tanggal). Hero jalan
+ * saat dimuat; panel lain saat masuk layar lewat RoyalSection (kelas
+ * `royal-pre` cuma ditambah JS, jadi tanpa JS teks tetap tampil). Foto,
+ * bingkai, amplop, dan elemen lain sengaja diam seperti di Canva. */
+@keyframes royal-write {
+  from {
+    clip-path: inset(-30% 130% -30% -30%);
+  }
+  to {
+    clip-path: inset(-30% -30% -30% -30%);
+  }
+}
+.write-on {
+  display: inline-block;
+  animation: royal-write var(--dur, 0.8s) cubic-bezier(0.45, 0, 0.25, 1) var(--delay, 0s) both;
+}
+.royal-pre .write-on {
+  animation: none;
+  clip-path: inset(-30% 130% -30% -30%);
+}
+.royal-in .write-on {
+  animation: royal-write var(--dur, 0.8s) cubic-bezier(0.45, 0, 0.25, 1) var(--delay, 0s) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .write-on,
+  .royal-in .write-on {
+    animation: none;
+  }
+  .royal-pre .write-on {
+    clip-path: none;
+  }
+}
+/* Latar satin: lipatan kain dari pita gradien diagonal bertingkat. */
+.royal-satin {
+  background-color: #4a0f1f;
+  background-image:
+    linear-gradient(118deg, rgba(0, 0, 0, 0) 0%, rgba(255, 130, 150, 0.2) 14%, rgba(0, 0, 0, 0.32) 27%, rgba(255, 140, 160, 0.16) 41%, rgba(0, 0, 0, 0.34) 58%, rgba(255, 130, 150, 0.18) 73%, rgba(0, 0, 0, 0.3) 100%),
+    radial-gradient(ellipse at 25% 15%, #8a1a30 0%, #5a1224 48%, #2e0711 100%);
+}
+.royal-satin-cream {
+  background-image:
+    linear-gradient(112deg, rgba(255, 255, 255, 0.55) 0%, rgba(120, 80, 30, 0.18) 22%, rgba(255, 255, 255, 0.4) 40%, rgba(120, 80, 30, 0.22) 64%, rgba(255, 255, 255, 0.35) 100%),
+    linear-gradient(160deg, #f3e4c8, #d9b98a);
+}
+.royal-gold {
+  background: linear-gradient(135deg, #f6e3a8 0%, #b98a2e 28%, #f2d98a 52%, #8f6420 76%, #e9c970 100%);
+}
+
+/* Efek tulis berbasis outline huruf (components/RoyalInvitation.tsx, Write):
+ * kontur digambar lewat stroke-dashoffset (pathLength=1), lalu isi huruf
+ * muncul. Hero jalan saat dimuat; panel lain saat masuk layar (RoyalSection). */
+.hw {
+  display: inline-block;
+  position: relative;
+}
+.hw-glyph {
+  fill: currentColor;
+  fill-opacity: 0;
+  stroke: currentColor;
+  stroke-width: 26;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  animation:
+    hw-draw var(--gd, 0.6s) cubic-bezier(0.5, 0, 0.3, 1) var(--gdelay, 0s) both,
+    hw-fill 0.4s ease-out calc(var(--gdelay, 0s) + var(--gd, 0.6s) * 0.7) both;
+}
+@keyframes hw-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes hw-fill {
+  to {
+    fill-opacity: 1;
+    stroke-width: 0;
+  }
+}
+.royal-pre .hw-glyph {
+  animation: none;
+  stroke-dashoffset: 1;
+  fill-opacity: 0;
+}
+.royal-in .hw-glyph {
+  animation:
+    hw-draw var(--gd, 0.6s) cubic-bezier(0.5, 0, 0.3, 1) var(--gdelay, 0s) both,
+    hw-fill 0.4s ease-out calc(var(--gdelay, 0s) + var(--gd, 0.6s) * 0.7) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hw-glyph,
+  .royal-in .hw-glyph,
+  .royal-pre .hw-glyph {
+    animation: none;
+    stroke-width: 0;
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+  }
+}
